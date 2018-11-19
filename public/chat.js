@@ -1,6 +1,6 @@
 //make connection
 
-var socket = io.connect('http://localhost:4000');
+//var socket = io.connect('http://localhost:4000');
 let $handle = document.getElementById('handle');
 let $message = document.getElementById('message');
 let $send = document.getElementById('send');
@@ -9,41 +9,42 @@ let feedback = document.getElementById('feedback');
 
 
 //webworker 
-/*
+
 const worker = new Worker('webworker.js');
 
-console.log('what is worker ', worker);
-
-worker.addEventListener('message', function(e){
-  console.log('message from worker ', e.data);
-})
-*/
-
-//worker.postMessage({type: 'solaceInstance', message: socket.id
-//});
-
-//emit event
+worker.addEventListener('message', function(msgObj){
+    console.log('getting message ', msgObj);
+    const msgData = msgObj.data;
+    const msgType = msgData.type;
+    
+    switch (msgType){
+        case 'chat':
+          output.innerHTML += '<p><em>'+ msgData.body.handle +'</em> ---'+ msgData.body.message+'</p>'
+          feedback.innerHTML="";
+        break; 
+        case 'typing':
+          feedback.innerHTML = '<p><em>'+msgData.body.handle +',  is typing message</em></p>'
+        break;
+    }
+});
 
 $send.addEventListener('click', function(){
-    socket.emit('chat', {
-        message:$message.value,
-        handle: $handle.value
+    worker.postMessage({
+        type: 'chat',
+        body: {
+            message: $message.value,
+            handle: $handle.value
+        }
     })
 });
 
-
-//listen for fron end events.
-
 $message.addEventListener('keypress', function(){
-    socket.emit('typing',handle.value)
+    worker.postMessage({
+        type:'typing',
+        body: {
+            handle: $handle.value
+        }
+    })
 })
 
 
-socket.on('chat', function(data){
-    output.innerHTML +='<p><em>'+ data.handle+'</em><span>'+ data.message+'</span></p>';
-    feedback.innerHTML ="";
-});
-
-socket.on('typing', function(data){
-    feedback.innerHTML = '<p>'+data +' is typing message</p>'
-})

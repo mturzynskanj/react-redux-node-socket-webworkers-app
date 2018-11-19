@@ -20,12 +20,24 @@ var io = socket(server);
 io.on('connection', function (socket) {
     console.log('made connection ', socket.id);
     socket.on('chat', function (data) {
-        console.log('data ', data);
-        io.sockets.emit('chat', data)
+        console.log('socket on chat ', data);
+        let messageObj = {
+            type:'chat',
+            body: {
+                handle: data.handle,
+                message: data.message
+            }
+        }
+        io.sockets.emit('chat', messageObj)
     });
 
     socket.on('typing',function(data){
-        console.log('on server typing ')
-        socket.broadcast.emit('typing', data);
+        let messageObj={
+            type:'typing',
+            body:{
+                handle: data.handle
+            }
+        }
+        socket.broadcast.emit('typing', messageObj);
     })
 });
